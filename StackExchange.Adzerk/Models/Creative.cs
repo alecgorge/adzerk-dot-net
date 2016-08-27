@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Adzerk.Api.Models
+namespace StackExchange.Adzerk.Models
 {
     public class Creative
     {

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adzerk.Api", "Adzerk.Api\Adzerk.Api.csproj", "{606FBED3-A799-40E4-9963-E351973E9805}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackExchange.Adzerk", "StackExchange.Adzerk\StackExchange.Adzerk.csproj", "{606FBED3-A799-40E4-9963-E351973E9805}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

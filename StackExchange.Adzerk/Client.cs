@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Net;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Adzerk.Api.Models;
 using Jil;
 using RestSharp;
+using StackExchange.Adzerk.Models;
 
-namespace Adzerk.Api
+namespace StackExchange.Adzerk
 {
     public interface IClient
     {
@@ -49,7 +47,7 @@ namespace Adzerk.Api
         {
             this.apiKey = apiKey;
 
-            var url = String.Format("http://api.adzerk.net/v{0}", CURRENT_VERSION);
+            var url = $"http://api.adzerk.net/v{CURRENT_VERSION}";
             this.client = new RestClient(url);
         }
 
@@ -71,7 +69,7 @@ namespace Adzerk.Api
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                var message = String.Format("Adzerk API error: {0}", response.StatusDescription);
+                var message = $"Adzerk API error: {response.StatusDescription}";
                 throw new AdzerkApiException(message, new { request, response });
             }
 
@@ -104,7 +102,7 @@ namespace Adzerk.Api
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                var message = String.Format("Adzerk API error: {0}", response.StatusDescription);
+                var message = $"Adzerk API error: {response.StatusDescription}";
                 throw new AdzerkApiException(message, new { request, response });
             }
 
@@ -125,7 +123,7 @@ namespace Adzerk.Api
                 return res.Result;
             }
 
-            var message = String.Format("Adzerk API error: {0}", res.Message);
+            var message = $"Adzerk API error: {res.Message}";
             throw new AdzerkApiException(message, new { response = res });
         }
 
@@ -147,7 +145,7 @@ namespace Adzerk.Api
                 return res.Result;
             }
 
-            var message = String.Format("Adzerk API error: {0}", res.Message);
+            var message = $"Adzerk API error: {res.Message}";
             throw new AdzerkApiException(message, new { response = res });
         }
 
@@ -160,7 +158,7 @@ namespace Adzerk.Api
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                var message = String.Format("Adzerk API error: {0}", response.StatusDescription);
+                var message = $"Adzerk API error: {response.StatusDescription}";
                 throw new AdzerkApiException(message, new { request, response });
             }
 
@@ -171,7 +169,7 @@ namespace Adzerk.Api
             }
             catch (Exception ex)
             {
-                var message = String.Format("Adzerk client error deserializing \"{0}\"", resource);
+                var message = $"Adzerk client error deserializing \"{resource}\"";
                 throw new AdzerkApiException(message, ex, new { request, response });
             }
         }
@@ -188,7 +186,7 @@ namespace Adzerk.Api
 
         public IEnumerable<Creative> ListAdvertiserCreatives(long advertiserId)
         {
-            var resource = String.Format("advertiser/{0}/creatives", advertiserId);
+            var resource = $"advertiser/{advertiserId}/creatives";
             var creatives = List<Creative>(resource);
             return creatives;
         }
@@ -213,7 +211,7 @@ namespace Adzerk.Api
 
         public IEnumerable<Flight> ListCampaignFlights(long campaignId)
         {
-            var resource = String.Format("campaign/{0}/flight", campaignId);
+            var resource = $"campaign/{campaignId}/flight";
             var flights = List<FlightDTO>(resource);
             return flights.Select(f => f.ToFlight());
         }
@@ -247,7 +245,7 @@ namespace Adzerk.Api
 
         private string ResourceUrl(string resource, long id)
         {
-            return String.Format("{0}/{1}", resource, id);
+            return $"{resource}/{id}";
         }
 
         private T Get<T>(string resource, long id)
@@ -259,7 +257,7 @@ namespace Adzerk.Api
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                var message = String.Format("Adzerk API error: {0}", response.StatusDescription);
+                var message = $"Adzerk API error: {response.StatusDescription}";
                 throw new AdzerkApiException(message, new { request, response });
             }
 
@@ -270,7 +268,7 @@ namespace Adzerk.Api
             }
             catch (Exception ex)
             {
-                var message = String.Format("Adzerk client error deserializing \"{0}\"", resource);
+                var message = $"Adzerk client error deserializing \"{resource}\"";
                 throw new AdzerkApiException(message, ex, new { request, response });
             }
         }
@@ -294,13 +292,14 @@ namespace Adzerk.Api
 
             var data = new Dictionary<string, T>();
             data[resource] = dto;
+            request.RequestFormat = DataFormat.Json;
             request.AddBody(data);
 
             var response = client.Execute(request);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                var message = String.Format("Adzerk API error: {0}", response.StatusDescription);
+                var message = $"Adzerk API error: {response.StatusDescription}";
                 throw new AdzerkApiException(message, new { request, response });
             }
 
@@ -311,7 +310,7 @@ namespace Adzerk.Api
             }
             catch (Exception ex)
             {
-                var message = String.Format("Adzerk client error deserializing \"{0}\"", resource);
+                var message = $"Adzerk client error deserializing \"{resource}\"";
                 throw new AdzerkApiException(message, ex, new { request, response });
             }
         }

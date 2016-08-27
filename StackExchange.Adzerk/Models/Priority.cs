@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Adzerk.Api.Models
+namespace StackExchange.Adzerk.Models
 {
     public enum SelectionAlgorithm : int
     {

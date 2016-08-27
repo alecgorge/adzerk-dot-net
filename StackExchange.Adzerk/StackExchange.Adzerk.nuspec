@@ -6,9 +6,11 @@
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
+    <licenseUrl>https://raw.githubusercontent.com/alecgorge/adzerk-dot-net/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Initial alpha release.</releaseNotes>
-    <copyright>Copyright 2014</copyright>
+    <releaseNotes>Post data as JSON; fixes update failures.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>adzerk adzerk-api api</tags>
   </metadata>
 </package>

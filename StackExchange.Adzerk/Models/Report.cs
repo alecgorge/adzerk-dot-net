@@ -4,7 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using Jil;
 
-namespace Adzerk.Api.Models
+namespace StackExchange.Adzerk.Models
 {
     public interface IReport
     {
@@ -118,7 +118,7 @@ namespace Adzerk.Api.Models
 
             if (!VALID_GROUPS.Contains(group))
             {
-                throw new AdzerkApiException(String.Format("Invalid group: '{0}'.", group));
+                throw new AdzerkApiException($"Invalid group: '{@group}'.");
             }
 
             groupBy.Add(group);
@@ -128,7 +128,7 @@ namespace Adzerk.Api.Models
         {
             if (!VALID_PARAMETERS.Contains(key))
             {
-                throw new AdzerkApiException(String.Format("Invalid parameter: '{0}'.", key));
+                throw new AdzerkApiException($"Invalid parameter: '{key}'.");
             }
 
             parameters.Add(key, value);

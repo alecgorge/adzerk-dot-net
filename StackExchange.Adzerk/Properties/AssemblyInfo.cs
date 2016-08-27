@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Adzerk.Api")]
+[assembly: AssemblyTitle("StackExchange.Adzerk")]
 [assembly: AssemblyDescription("Unofficial Adzerk API client.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Stack Exchange")]
-[assembly: AssemblyProduct("Adzerk.Api")]
-[assembly: AssemblyCopyright("Copyright ©  2014")]
+[assembly: AssemblyCompany("Stack Overflow")]
+[assembly: AssemblyProduct("StackExchange.Adzerk")]
+[assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.0.20")]
-[assembly: AssemblyFileVersion("0.0.0.20")]
+[assembly: AssemblyVersion("0.0.0.21")]
+[assembly: AssemblyFileVersion("0.0.0.21")]
