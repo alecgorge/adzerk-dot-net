@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Jil;
-using RestSharp;
 using StackExchange.Adzerk.Models;
+using System.Net.Http;
+using System.Text;
 
 namespace StackExchange.Adzerk
 {
@@ -13,7 +14,7 @@ namespace StackExchange.Adzerk
     {
         string CreateReport(IReport report);
         ReportResult PollForResult(string id);
-        Task<ReportResult> RunReport(IReport report);
+        ReportResult RunReport(IReport report);
 
         IEnumerable<AdType> ListAdTypes();
         IEnumerable<Advertiser> ListAdvertisers();
@@ -40,47 +41,60 @@ namespace StackExchange.Adzerk
         public const int CURRENT_VERSION = 1;
         public const int POLL_DELAY = 1000;
 
-        string apiKey;
-        RestClient client;
+        private readonly string _apiKey;
+        private readonly HttpClient _client;
 
         public Client(string apiKey)
         {
-            this.apiKey = apiKey;
+            this._apiKey = apiKey;
 
-            var url = $"http://api.adzerk.net/v{CURRENT_VERSION}";
-            this.client = new RestClient(url);
+            _client = new HttpClient();
         }
 
-        private void addHeader(RestRequest request)
+        private string ApiRoute(string path)
         {
-            request.AddHeader("X-Adzerk-ApiKey", apiKey);
+            return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}";
+        }
+
+        private HttpResponseMessage ExecuteApiRequest(string route, HttpMethod method = null, string body = null)
+        {
+            if (method == null)
+            {
+                method = HttpMethod.Get;
+            }
+
+            var request = new HttpRequestMessage(method, ApiRoute(route));
+
+            request.Headers.Add("X-Adzerk-ApiKey", _apiKey);
+
+            if (body != null)
+            {
+                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body));
+            }
+
+            var response = _client.SendAsync(request).Result;
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                var message = $"Adzerk API error ({response.StatusCode}): {response.Content.ReadAsStringAsync().Result}";
+                throw new AdzerkApiException(message, new {request, response});
+            }
+
+            return response;
         }
 
         public string CreateReport(IReport report)
         {
-            var request = new RestRequest("report/queue", Method.POST);
-
-            addHeader(request);
-
-            var serialized = ReportSerializer.SerializeReport(report);
-            request.AddParameter("criteria", serialized);
-
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var message = $"Adzerk API error: {response.StatusDescription}";
-                throw new AdzerkApiException(message, new { request, response });
-            }
+            var response = ExecuteApiRequest("report/queue", HttpMethod.Post, "criteria=" + ReportSerializer.SerializeReport(report));
 
             try
             {
-                var result = JSON.DeserializeDynamic(response.Content);
+                var result = JSON.DeserializeDynamic(response.Content.ReadAsStringAsync().Result);
                 return result.Id;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new AdzerkApiException("Report result does not contain report Id.", new { request, response });
+                throw new AdzerkApiException("Report result does not contain report Id.", new {response.RequestMessage, response});
             }
         }
 
@@ -93,20 +107,9 @@ namespace StackExchange.Adzerk
 
         private ReportResultWrapper pollForResult(string id)
         {
-            var request = new RestRequest("report/queue/{id}", Method.GET);
-            request.AddUrlSegment("id", id);
+            var response = ExecuteApiRequest("report/queue/" + id);
 
-            addHeader(request);
-
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var message = $"Adzerk API error: {response.StatusDescription}";
-                throw new AdzerkApiException(message, new { request, response });
-            }
-
-            return JSON.Deserialize<ReportResultWrapper>(response.Content);
+            return JSON.Deserialize<ReportResultWrapper>(response.Content.ReadAsStringAsync().Result);
         }
 
         public ReportResult PollForResult(string id)
@@ -124,10 +127,10 @@ namespace StackExchange.Adzerk
             }
 
             var message = $"Adzerk API error: {res.Message}";
-            throw new AdzerkApiException(message, new { response = res });
+            throw new AdzerkApiException(message, new {response = res});
         }
 
-        public async Task<ReportResult> RunReport(IReport report)
+        public ReportResult RunReport(IReport report)
         {
             var id = CreateReport(report);
 
@@ -135,7 +138,7 @@ namespace StackExchange.Adzerk
 
             while (res.Status == 1)
             {
-                await Task.Delay(POLL_DELAY);
+                Task.Delay(POLL_DELAY);
 
                 res = pollForResult(id);
             }
@@ -146,31 +149,22 @@ namespace StackExchange.Adzerk
             }
 
             var message = $"Adzerk API error: {res.Message}";
-            throw new AdzerkApiException(message, new { response = res });
+            throw new AdzerkApiException(message, new {response = res});
         }
 
         private IEnumerable<T> List<T>(string resource)
         {
-            var request = new RestRequest(resource);
-            addHeader(request);
-
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var message = $"Adzerk API error: {response.StatusDescription}";
-                throw new AdzerkApiException(message, new { request, response });
-            }
+            var response = ExecuteApiRequest(resource);
 
             try
             {
-                var result = (ResultWrapper<T>)JSON.Deserialize<ResultWrapper<T>>(response.Content);
+                var result = JSON.Deserialize<ResultWrapper<T>>(response.Content.ReadAsStringAsync().Result);
                 return result.items;
             }
             catch (Exception ex)
             {
                 var message = $"Adzerk client error deserializing \"{resource}\"";
-                throw new AdzerkApiException(message, ex, new { request, response });
+                throw new AdzerkApiException(message, ex, new {response.RequestMessage, response});
             }
         }
 
@@ -250,26 +244,17 @@ namespace StackExchange.Adzerk
 
         private T Get<T>(string resource, long id)
         {
-            var request = new RestRequest(ResourceUrl(resource, id));
-            addHeader(request);
-
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var message = $"Adzerk API error: {response.StatusDescription}";
-                throw new AdzerkApiException(message, new { request, response });
-            }
+            var response = ExecuteApiRequest(ResourceUrl(resource, id));
 
             try
             {
-                var result = (T)JSON.Deserialize<T>(response.Content);
+                var result = JSON.Deserialize<T>(response.Content.ReadAsStringAsync().Result);
                 return result;
             }
             catch (Exception ex)
             {
                 var message = $"Adzerk client error deserializing \"{resource}\"";
-                throw new AdzerkApiException(message, ex, new { request, response });
+                throw new AdzerkApiException(message, ex, new {response.RequestMessage, response});
             }
         }
 
@@ -287,45 +272,32 @@ namespace StackExchange.Adzerk
 
         private T Update<T>(string resource, long id, T dto)
         {
-            var request = new RestRequest(ResourceUrl(resource, id), Method.PUT);
-            addHeader(request);
-
-            var data = new Dictionary<string, T>();
-            data[resource] = dto;
-            request.RequestFormat = DataFormat.Json;
-            request.AddBody(data);
-
-            var response = client.Execute(request);
-
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var message = $"Adzerk API error: {response.StatusDescription}";
-                throw new AdzerkApiException(message, new { request, response });
-            }
+            var body = resource + "=" + JSON.Serialize(dto);
+            var response = ExecuteApiRequest(ResourceUrl(resource, id), HttpMethod.Put, body);
 
             try
             {
-                var result = (T)JSON.Deserialize<T>(response.Content);
+                var result = JSON.Deserialize<T>(response.Content.ReadAsStringAsync().Result);
                 return result;
             }
             catch (Exception ex)
             {
                 var message = $"Adzerk client error deserializing \"{resource}\"";
-                throw new AdzerkApiException(message, ex, new { request, response });
+                throw new AdzerkApiException(message, ex, new {response.RequestMessage, response});
             }
         }
 
         public Campaign UpdateCampaign(Campaign campaign)
         {
             var dto = campaign.ToDTO();
-            var updated = Update<CampaignDTO>("campaign", campaign.Id, dto);
+            var updated = Update("campaign", campaign.Id, dto);
             return updated.ToCampaign();
         }
 
         public Flight UpdateFlight(Flight flight)
         {
             var dto = flight.ToDTO();
-            var updated = Update<FlightDTO>("flight", flight.Id, dto);
+            var updated = Update("flight", flight.Id, dto);
             return updated.ToFlight();
         }
     }
