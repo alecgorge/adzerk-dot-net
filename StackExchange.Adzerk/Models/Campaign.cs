@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jil;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,6 +60,27 @@ namespace StackExchange.Adzerk.Models
         public IEnumerable<FlightDTO> Flights;
         public string CustomFieldsJson;
 
+        private DateTime ParseDate(string str)
+        {
+            DateTime date = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
+            if(!DateTime.TryParseExact(str, "yyyy-MM-dd'T'HH:mm:ss", null, System.Globalization.DateTimeStyles.AssumeUniversal, out date))
+            {
+                long ms = 0;
+
+                // /Date(1293858000000)/
+                if(!long.TryParse(str.Substring(6, 13), out ms))
+                {
+                    // \/Date(1293858000000-0500)\/
+                    long.TryParse(str.Substring(7, 13), out ms);
+                }
+
+                return date.AddMilliseconds(ms);
+            }
+
+            return date;
+        }
+
         public Campaign ToCampaign()
         {
             var c = new Campaign();
@@ -72,10 +94,10 @@ namespace StackExchange.Adzerk.Models
             c.Price = Price;
             c.CustomFieldsJson = CustomFieldsJson;
 
-            c.StartDate = DateTime.Parse(StartDate);
+            c.StartDate = ParseDate(StartDate);
             if (EndDate != null)
             {
-                c.EndDate = DateTime.Parse(EndDate);
+                c.EndDate = ParseDate(EndDate);
             }
 
             if (Flights == null)

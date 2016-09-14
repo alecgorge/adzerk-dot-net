@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Jil;
 using StackExchange.Adzerk.Models;
 using System.Net.Http;
-using System.Text;
 
 namespace StackExchange.Adzerk
 {
@@ -44,11 +43,18 @@ namespace StackExchange.Adzerk
         private readonly string _apiKey;
         private readonly HttpClient _client;
 
-        public Client(string apiKey)
+        public Client(string apiKey, HttpClientHandler customHandler = null)
         {
             this._apiKey = apiKey;
-
-            _client = new HttpClient();
+            
+            if(customHandler != null)
+            {
+                _client = new HttpClient(customHandler);
+            }
+            else
+            {
+                _client = new HttpClient();
+            }
         }
 
         private string ApiRoute(string path)
@@ -56,7 +62,7 @@ namespace StackExchange.Adzerk
             return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}";
         }
 
-        private HttpResponseMessage ExecuteApiRequest(string route, HttpMethod method = null, string body = null)
+        private HttpResponseMessage ExecuteApiRequest(string route, HttpMethod method = null, string bodyKey = null, string bodyValue = null)
         {
             if (method == null)
             {
@@ -67,9 +73,11 @@ namespace StackExchange.Adzerk
 
             request.Headers.Add("X-Adzerk-ApiKey", _apiKey);
 
-            if (body != null)
+            if (bodyKey != null)
             {
-                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(body));
+                request.Content = new FormUrlEncodedContent(new[] {
+                    new KeyValuePair<string, string>(bodyKey, bodyValue)
+                });
             }
 
             var response = _client.SendAsync(request).Result;
@@ -85,7 +93,7 @@ namespace StackExchange.Adzerk
 
         public string CreateReport(IReport report)
         {
-            var response = ExecuteApiRequest("report/queue", HttpMethod.Post, "criteria=" + ReportSerializer.SerializeReport(report));
+            var response = ExecuteApiRequest("report/queue", HttpMethod.Post, "criteria", ReportSerializer.SerializeReport(report));
 
             try
             {
@@ -272,8 +280,7 @@ namespace StackExchange.Adzerk
 
         private T Update<T>(string resource, long id, T dto)
         {
-            var body = resource + "=" + JSON.Serialize(dto);
-            var response = ExecuteApiRequest(ResourceUrl(resource, id), HttpMethod.Put, body);
+            var response = ExecuteApiRequest(ResourceUrl(resource, id), HttpMethod.Put, resource, JSON.Serialize(dto));
 
             try
             {
