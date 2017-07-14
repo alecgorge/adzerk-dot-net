@@ -117,10 +117,10 @@ namespace StackExchange.Adzerk.Models
             f.PriorityId = PriorityId;
             f.Name = Name;
 
-            f.StartDate = StartDate.ToLongDateString();
+            f.StartDate = StartDate.ToUniversalTime().ToLongDateString();
             if (!NoEndDate && EndDate.HasValue)
             {
-                f.EndDate = EndDate.Value.ToLongDateString();
+                f.EndDate = EndDate.Value.ToUniversalTime().ToLongDateString();
             }
             f.NoEndDate = NoEndDate;
 
@@ -259,10 +259,10 @@ namespace StackExchange.Adzerk.Models
             f.PriorityId = PriorityId;
             f.Name = Name;
 
-            f.StartDate = DateTime.Parse(StartDate);
+            f.StartDate = AdzerkDateTimeHelpers.ParseAdzerkDate(StartDate);
             if (!NoEndDate && EndDate != null)
             {
-                f.EndDate = DateTime.Parse(EndDate);
+                f.EndDate = AdzerkDateTimeHelpers.ParseAdzerkDate(EndDate);
             }
             f.NoEndDate = NoEndDate;
 
