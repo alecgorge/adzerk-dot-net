@@ -166,20 +166,24 @@ namespace StackExchange.Adzerk
 
         private IEnumerable<T> List<T>(string resource)
         {
-            int totalPages = 1;
+            int totalPages = 0;
             IEnumerable<T>[] totalItems;
 
             // Retrieve first page of information and setup for later stages.
             {
                 var response = ExecuteApiRequest(resource, page: 1);
+                string dbgText = null;
 
                 try
                 {
-                    var result = JSON.Deserialize<ResultWrapper<T>>(response.Content.ReadAsStringAsync().Result);
+                    dbgText = response.Content.ReadAsStringAsync().Result;
+                    var result = JSON.Deserialize<ResultWrapper<T>>(dbgText);
 
                     totalPages = result.totalPages;
                     totalItems = new IEnumerable<T>[totalPages];
-                    totalItems[0] = result.items;
+
+                    if (totalPages > 0)
+                        totalItems[0] = result.items;
                 }
                 catch (Exception ex)
                 {
