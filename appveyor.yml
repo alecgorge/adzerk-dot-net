@@ -14,6 +14,6 @@ deploy:
   api_key:
     secure: BUsLevk5w2SaTOUbPd6mTgPrIQ3nFJ8oUH6RSr4aMidhBWo11gSl5v37Lk1vMX7m
   skip_symbols: true
-  artifact: StackExchange.Adzerk
+  artifact: /.*\.nupkg/
   on:
     appveyor_repo_tag: true
