@@ -39,6 +39,7 @@ namespace StackExchange.Adzerk
     {
         public const int CURRENT_VERSION = 1;
         public const int POLL_DELAY = 1000;
+        public const int LIST_PAGE_SIZE = 1000;
 
         private readonly string _apiKey;
         private readonly HttpClient _client;
@@ -57,19 +58,22 @@ namespace StackExchange.Adzerk
             }
         }
 
-        private string ApiRoute(string path)
+        private string ApiRoute(string path, int? page)
         {
-            return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}";
+            if (page.HasValue)
+                return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}?page={page}&pageSize={LIST_PAGE_SIZE}";
+            else
+                return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}";
         }
 
-        private HttpResponseMessage ExecuteApiRequest(string route, HttpMethod method = null, string bodyKey = null, string bodyValue = null)
+        private HttpResponseMessage ExecuteApiRequest(string route, int? page = null, HttpMethod method = null, string bodyKey = null, string bodyValue = null)
         {
             if (method == null)
             {
                 method = HttpMethod.Get;
             }
 
-            var request = new HttpRequestMessage(method, ApiRoute(route));
+            var request = new HttpRequestMessage(method, ApiRoute(route, page));
 
             request.Headers.Add("X-Adzerk-ApiKey", _apiKey);
 
@@ -93,7 +97,7 @@ namespace StackExchange.Adzerk
 
         public string CreateReport(IReport report)
         {
-            var response = ExecuteApiRequest("report/queue", HttpMethod.Post, "criteria", ReportSerializer.SerializeReport(report));
+            var response = ExecuteApiRequest("report/queue", null, HttpMethod.Post, "criteria", ReportSerializer.SerializeReport(report));
 
             try
             {
@@ -162,18 +166,54 @@ namespace StackExchange.Adzerk
 
         private IEnumerable<T> List<T>(string resource)
         {
-            var response = ExecuteApiRequest(resource);
+            int totalPages = 1;
+            IEnumerable<T>[] totalItems;
 
-            try
+            // Retrieve first page of information and setup for later stages.
             {
-                var result = JSON.Deserialize<ResultWrapper<T>>(response.Content.ReadAsStringAsync().Result);
-                return result.items;
+                var response = ExecuteApiRequest(resource, page: 1);
+
+                try
+                {
+                    var result = JSON.Deserialize<ResultWrapper<T>>(response.Content.ReadAsStringAsync().Result);
+
+                    totalPages = result.totalPages;
+                    totalItems = new IEnumerable<T>[totalPages];
+                    totalItems[0] = result.items;
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Adzerk client error deserializing \"{resource}\" at page 0";
+                    throw new AdzerkApiException(message, ex, new { response.RequestMessage, response });
+                }
             }
-            catch (Exception ex)
+
+            // Retrieve second and later pages of information.
             {
-                var message = $"Adzerk client error deserializing \"{resource}\"";
-                throw new AdzerkApiException(message, ex, new {response.RequestMessage, response});
+                for (var i = 1; i < totalPages; i++)
+                {
+                    var currentResponse = ExecuteApiRequest(resource, page: i + 1);
+
+                    try
+                    {
+                        var currentResult = JSON.Deserialize<ResultWrapper<T>>(currentResponse.Content.ReadAsStringAsync().Result);
+                        totalItems[i] = currentResult.items;
+
+                        if (currentResult.totalPages > totalPages)
+                        {
+                            totalPages = currentResult.totalPages;
+                            Array.Resize(ref totalItems, totalPages);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var message = $"Adzerk client error deserializing \"{resource}\" at page {i}";
+                        throw new AdzerkApiException(message, ex, new { currentResponse.RequestMessage, currentResponse });
+                    }
+                }
             }
+
+            return totalItems.SelectMany(i => i);
         }
 
         public IEnumerable<AdType> ListAdTypes()
@@ -280,7 +320,7 @@ namespace StackExchange.Adzerk
 
         private T Update<T>(string resource, long id, T dto)
         {
-            var response = ExecuteApiRequest(ResourceUrl(resource, id), HttpMethod.Put, resource, JSON.Serialize(dto));
+            var response = ExecuteApiRequest(ResourceUrl(resource, id), null, HttpMethod.Put, resource, JSON.Serialize(dto));
 
             try
             {
