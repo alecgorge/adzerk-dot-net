@@ -1,4 +1,4 @@
-Adzerk .NET API Client [![Version](https://img.shields.io/nuget/v/StackExchange.Adzerk.svg)](https://img.shields.io/nuget/v/StackExchange.Adzerk.svg) [![Build status](https://ci.appveyor.com/api/projects/status/btr9aajsql1hdyv1?svg=true)](https://ci.appveyor.com/project/horia141/adzerk-dot-net) [![Downloads](https://img.shields.io/nuget/dt/Microsoft.AspNetCore.Mvc.svg)](https://img.shields.io/nuget/dt/Microsoft.AspNetCore.Mvc.svg)
+Adzerk .NET API Client [![Version](https://img.shields.io/nuget/v/StackExchange.Adzerk.svg)](https://img.shields.io/nuget/v/StackExchange.Adzerk.svg) [![Build status](https://ci.appveyor.com/api/projects/status/btr9aajsql1hdyv1?svg=true)](https://ci.appveyor.com/project/horia141/adzerk-dot-net) [![Downloads](https://img.shields.io/nuget/dt/StackExchange.Adzerk.svg)](https://img.shields.io/nuget/dt/StackExchange.Adzerk.svg)
 ======================
 
 An unofficial API client for the [Adzerk API][0] written in C# for use
