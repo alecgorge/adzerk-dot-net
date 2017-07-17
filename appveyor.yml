@@ -5,8 +5,8 @@ environment:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
 before_build: nuget.exe restore
-after_test: nuget.exe pack StackExchange.Adzerk/StackExchange.Adzerk.csproj -properties Configuration=Release
+after_build: nuget.exe pack StackExchange.Adzerk/StackExchange.Adzerk.csproj -properties Configuration=Release
 
 artifacts:
-- path: 'StackExchange.Adzerk/StackExchange.Adzerk.*.nupkg'
+- path: 'StackExchange.Adzerk.*.nupkg'
   name: StackExchange.Adzerk
