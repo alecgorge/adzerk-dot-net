@@ -28,7 +28,7 @@ namespace StackExchange.Adzerk.Models
         public int FreqCap { get; set; }
         public int FreqCapDuration { get; set; }
         public FreqCapType FreqCapType { get; set; }
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public GoalType GoalType { get; set; }
         public int Goal { get; set; }
@@ -88,8 +88,8 @@ namespace StackExchange.Adzerk.Models
                 FreqCap = FreqCap,
                 FreqCapDuration = FreqCapDuration,
                 FreqCapType = (FreqCapType)FreqCapType,
-                StartDate = AdzerkDateTimeHelpers.ParseAdzerkDate(StartDate),
-                EndDate = AdzerkDateTimeHelpers.ParseAdzerkDate(EndDate),
+                StartDate = !string.IsNullOrWhiteSpace(StartDate) ? (DateTime?)AdzerkDateTimeHelpers.ParseAdzerkDate(StartDate) : null,
+                EndDate = !string.IsNullOrWhiteSpace(EndDate) ? (DateTime?)AdzerkDateTimeHelpers.ParseAdzerkDate(EndDate) : null,
                 GoalType = (GoalType)GoalType,
                 Goal = Goal,
                 IsGoalOverride = IsGoalOverride,
