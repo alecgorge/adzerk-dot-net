@@ -22,6 +22,7 @@ namespace StackExchange.Adzerk
         IEnumerable<Creative> ListAdvertiserCreatives(long advertiserId);
         IEnumerable<Flight> ListFlights();
         IEnumerable<Flight> ListCampaignFlights(long campaignId);
+        IEnumerable<Ad> ListFlightAds(long flightId);
         IEnumerable<Login> ListLogins();
         IEnumerable<Priority> ListPriorities();
         IEnumerable<Publisher> ListPublishers();
@@ -260,6 +261,13 @@ namespace StackExchange.Adzerk
             var resource = $"campaign/{campaignId}/flight";
             var flights = List<FlightDTO>(resource);
             return flights.Select(f => f.ToFlight());
+        }
+
+        public IEnumerable<Ad> ListFlightAds(long flightId)
+        {
+            var resource = $"flight/{flightId}/creatives";
+            var ads = List<AdDTO>(resource);
+            return ads.Select(ad => ad.ToAd());
         }
 
         public IEnumerable<Login> ListLogins()

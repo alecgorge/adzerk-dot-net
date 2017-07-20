@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
+    <Compile Include="Models\Ad.cs" />
     <Compile Include="Models\Creative.cs" />
     <Compile Include="Models\AdType.cs" />
     <Compile Include="Models\Advertiser.cs" />
