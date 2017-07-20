@@ -1,11 +1,11 @@
-﻿using System;
-using System.Net;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Jil;
+﻿using Jil;
 using StackExchange.Adzerk.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace StackExchange.Adzerk
 {
@@ -39,7 +39,7 @@ namespace StackExchange.Adzerk
     {
         public const int CURRENT_VERSION = 1;
         public const int POLL_DELAY = 1000;
-        public const int LIST_PAGE_SIZE = 1000;
+        public const int LIST_PAGE_SIZE = 100;
 
         private readonly string _apiKey;
         private readonly HttpClient _client;

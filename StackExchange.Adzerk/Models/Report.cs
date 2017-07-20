@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using Jil;
+using System;
 using System.Collections.Generic;
-using Jil;
+using System.IO;
 
 namespace StackExchange.Adzerk.Models
 {
