@@ -291,12 +291,9 @@ namespace StackExchange.Adzerk.Models
 
             f.IsFreqCap = IsFreqCap;
 
-            if (IsFreqCap)
-            {
-                f.FreqCap = FreqCap;
-                f.FreqCapDuration = FreqCapDuration;
-                f.FreqCapType = (FreqCapType)FreqCapType;
-            }
+            f.FreqCap = FreqCap;
+            f.FreqCapDuration = FreqCapDuration;
+            f.FreqCapType = (FreqCapType)FreqCapType;
 
             f.DatePartingStartTime = DatePartingStartTime;
             f.DatePartingEndTime = DatePartingEndTime;
