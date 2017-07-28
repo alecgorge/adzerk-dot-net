@@ -74,7 +74,7 @@ namespace StackExchange.Adzerk.Models
         public long? DailyCapAmount { get; set; }
         public long? LifetimeCapAmount { get; set; }
 
-        public bool IsFreqCap { get; set; }
+        public bool? IsFreqCap { get; set; }
         public long? FreqCap { get; set; }
         public long? FreqCapDuration { get; set; }
         public FreqCapType FreqCapType { get; set; }
@@ -149,12 +149,9 @@ namespace StackExchange.Adzerk.Models
 
             f.IsFreqCap = IsFreqCap;
 
-            if (IsFreqCap)
-            {
-                f.FreqCap = FreqCap;
-                f.FreqCapDuration = FreqCapDuration;
-                f.FreqCapType = (int)FreqCapType;
-            }
+            f.FreqCap = FreqCap;
+            f.FreqCapDuration = FreqCapDuration;
+            f.FreqCapType = (int)FreqCapType;
 
             f.DatePartingStartTime = DatePartingStartTime;
             f.DatePartingEndTime = DatePartingEndTime;
@@ -216,7 +213,7 @@ namespace StackExchange.Adzerk.Models
         public long? DailyCapAmount;
         public long? LifetimeCapAmount;
 
-        public bool IsFreqCap;
+        public bool? IsFreqCap;
         public long? FreqCap;
         public long? FreqCapDuration;
         public int FreqCapType;
