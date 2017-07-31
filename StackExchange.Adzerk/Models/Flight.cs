@@ -45,6 +45,15 @@ namespace StackExchange.Adzerk.Models
         Underdelivered = 5
     }
 
+    public enum DuplicateMode : int
+    {
+        UNKNOWN = 0,
+        Flight = 1,
+        Campaign = 2,
+        Advertiser = 3,
+        Creative = 4
+    };
+
     public class Flight
     {
         public long Id { get; set; }
@@ -105,6 +114,9 @@ namespace StackExchange.Adzerk.Models
         public DeliveryStatus DeliveryStatus { get; set; }
 
         public string CustomFieldsJson { get; set; }
+
+        public bool? IsNoDuplicates;
+        public DuplicateMode? DuplicateMode;
 
         public FlightDTO ToDTO()
         {
@@ -180,6 +192,9 @@ namespace StackExchange.Adzerk.Models
 
             f.CustomFieldsJson = CustomFieldsJson;
 
+            f.IsNoDuplicates = IsNoDuplicates;
+            f.DuplicateMode = (int?)DuplicateMode;
+
             return f;
         }
     }
@@ -244,6 +259,9 @@ namespace StackExchange.Adzerk.Models
         public int DeliveryStatus;
 
         public string CustomFieldsJson;
+
+        public bool? IsNoDuplicates;
+        public int? DuplicateMode;
 
         public Flight ToFlight()
         {
@@ -318,6 +336,9 @@ namespace StackExchange.Adzerk.Models
             f.DeliveryStatus = (DeliveryStatus)DeliveryStatus;
 
             f.CustomFieldsJson = CustomFieldsJson;
+
+            f.IsNoDuplicates = IsNoDuplicates;
+            f.DuplicateMode = (DuplicateMode?)DuplicateMode;
 
             return f;
         }
