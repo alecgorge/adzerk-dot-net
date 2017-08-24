@@ -317,7 +317,8 @@ namespace StackExchange.Adzerk
 
                 foreach (var flightId in flightIds)
                 {
-                    resultResponse.Flights.TryGetValue(flightId.ToString(), out EntityInstantReport entityInstantReport);
+                    EntityInstantReport entityInstantReport = null;
+                    resultResponse.Flights.TryGetValue(flightId.ToString(), out entityInstantReport);
                     result[flightId] = entityInstantReport;
                 }
 
