@@ -50,7 +50,7 @@ namespace StackExchange.Adzerk
 
         public Client(string apiKey, HttpClientHandler customHandler = null)
         {
-            this._apiKey = apiKey;
+            this._apiKey = apiKey.Trim();
 
             if(customHandler != null)
             {
