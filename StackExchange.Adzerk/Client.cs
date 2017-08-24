@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace StackExchange.Adzerk
@@ -34,6 +35,8 @@ namespace StackExchange.Adzerk
 
         Flight GetFlight(long flightId);
         Flight UpdateFlight(Flight flight);
+
+        Dictionary<long, EntityInstantReport> GetInstantReportForFlights(IEnumerable<long> flightIds);
     }
 
     public class Client : IClient
@@ -48,7 +51,7 @@ namespace StackExchange.Adzerk
         public Client(string apiKey, HttpClientHandler customHandler = null)
         {
             this._apiKey = apiKey;
-            
+
             if(customHandler != null)
             {
                 _client = new HttpClient(customHandler);
@@ -67,7 +70,7 @@ namespace StackExchange.Adzerk
                 return $"http://api.adzerk.net/v{CURRENT_VERSION}/{path}";
         }
 
-        private HttpResponseMessage ExecuteApiRequest(string route, int? page = null, HttpMethod method = null, string bodyKey = null, string bodyValue = null)
+        private HttpResponseMessage ExecuteApiRequest(string route, int? page = null, HttpMethod method = null, string bodyKey = null, string bodyValue = null, string bodyJson = null)
         {
             if (method == null)
             {
@@ -78,7 +81,11 @@ namespace StackExchange.Adzerk
 
             request.Headers.Add("X-Adzerk-ApiKey", _apiKey);
 
-            if (bodyKey != null)
+            if (bodyJson != null)
+            {
+                request.Content = new StringContent(bodyJson, encoding: Encoding.UTF8, mediaType: "application/json");
+            }
+            else if (bodyKey != null)
             {
                 request.Content = new FormUrlEncodedContent(new[] {
                     new KeyValuePair<string, string>(bodyKey, bodyValue)
@@ -98,7 +105,7 @@ namespace StackExchange.Adzerk
 
         public string CreateReport(IReport report)
         {
-            var response = ExecuteApiRequest("report/queue", null, HttpMethod.Post, "criteria", ReportSerializer.SerializeReport(report));
+            var response = ExecuteApiRequest("report/queue", method: HttpMethod.Post, bodyKey: "criteria", bodyValue: ReportSerializer.SerializeReport(report));
 
             try
             {
@@ -297,6 +304,32 @@ namespace StackExchange.Adzerk
             return List<Zone>("zone");
         }
 
+        public Dictionary<long, EntityInstantReport> GetInstantReportForFlights(IEnumerable<long> flightIds)
+        {
+            var resource = $"instantcounts/bulk";
+            var requestData = new InstantReportBulkRequest() { Flights = flightIds };
+            var response = ExecuteApiRequest(resource, method: HttpMethod.Post, bodyJson: JSON.Serialize(requestData, Options.CamelCase));
+
+            try
+            {
+                var result = new Dictionary<long, EntityInstantReport>();
+                var resultResponse = JSON.Deserialize<InstantReportResponse>(response.Content.ReadAsStringAsync().Result, Options.CamelCase);
+
+                foreach (var flightId in flightIds)
+                {
+                    resultResponse.Flights.TryGetValue(flightId.ToString(), out EntityInstantReport entityInstantReport);
+                    result[flightId] = entityInstantReport;
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var message = $"Adzerk client error deserializing \"{resource}\"";
+                throw new AdzerkApiException(message, ex, new {response.RequestMessage, response});
+            }
+        }
+
         private string ResourceUrl(string resource, long id)
         {
             return $"{resource}/{id}";
@@ -332,7 +365,7 @@ namespace StackExchange.Adzerk
 
         private T Update<T>(string resource, long id, T dto)
         {
-            var response = ExecuteApiRequest(ResourceUrl(resource, id), null, HttpMethod.Put, resource, JSON.Serialize(dto));
+            var response = ExecuteApiRequest(ResourceUrl(resource, id), method: HttpMethod.Put, bodyKey: resource, bodyValue: JSON.Serialize(dto));
 
             try
             {
