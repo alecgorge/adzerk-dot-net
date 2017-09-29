@@ -380,6 +380,11 @@ namespace StackExchange.Adzerk
             }
         }
 
+        public Advertiser UpdateAdvertiser(Advertiser advertiser)
+        {
+            return Update("advertiser", advertiser.Id, advertiser);
+        }
+
         public Campaign UpdateCampaign(Campaign campaign)
         {
             var dto = campaign.ToDTO();
