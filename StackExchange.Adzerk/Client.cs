@@ -380,6 +380,8 @@ namespace StackExchange.Adzerk
             }
         }
 
+        private void UpdateAndForget<T>(string resource, long id, T dto) => ExecuteApiRequest(ResourceUrl(resource, id), method: HttpMethod.Put, bodyKey: resource, bodyValue: JSON.Serialize(dto));
+
         public Advertiser UpdateAdvertiser(Advertiser advertiser)
         {
             return Update("advertiser", advertiser.Id, advertiser);
@@ -390,6 +392,34 @@ namespace StackExchange.Adzerk
             var dto = campaign.ToDTO();
             var updated = Update("campaign", campaign.Id, dto);
             return updated.ToCampaign();
+        }
+
+        public void ArchiveCampaign(Campaign campaign)
+        {
+            var archiveDto = new
+            {
+                Id = campaign.Id,
+                AdvertiserId = campaign.AdvertiserId,
+                Name = campaign.Name,
+                StartDate = campaign.StartDate,
+                IsActive = false
+            };
+
+            UpdateAndForget("campaign", campaign.Id, archiveDto);
+        }
+
+        public void ResumeCampaign(Campaign campaign)
+        {
+            var resumeDto = new
+            {
+                Id = campaign.Id,
+                AdvertiserId = campaign.AdvertiserId,
+                Name = campaign.Name,
+                StartDate = campaign.StartDate,
+                IsActive = true
+            };
+
+            UpdateAndForget("campaign", campaign.Id, resumeDto);
         }
 
         public Flight UpdateFlight(Flight flight)
